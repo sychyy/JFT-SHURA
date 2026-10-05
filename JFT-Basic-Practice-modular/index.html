@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JFT-Basic Practice</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'], jp: ['"Noto Sans JP"', 'sans-serif'] },
+                    colors: { brand: { 50: '#f0f9ff', 100: '#e0f2fe', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1' } }
+                }
+            }
+        }
+    </script>
+    
+
+
+
+
+
+
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header & Navigasi -->
+    <header id="main-header" class="bg-white shadow-sm sticky top-0 z-50 hidden">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="navigate('home')">
+                <i class="fa-solid fa-language text-brand-600 text-2xl"></i>
+                <div>
+                    <h1 class="text-lg font-bold text-slate-800 leading-tight">JFT-Basic Practice</h1>
+                    <p class="text-xs text-slate-500 hidden sm:block">Simulasi Latihan Bahasa Jepang</p>
+                </div>
+            </div>
+            <nav class="flex items-center gap-4">
+                <button onclick="navigate('history')" class="text-slate-600 hover:text-brand-600 transition font-medium text-sm flex items-center gap-1">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Riwayat
+                </button>
+                <button onclick="handleLogout()" class="text-red-500 hover:text-red-600 transition font-medium text-sm flex items-center gap-1">
+                    <i class="fa-solid fa-right-from-bracket"></i> Keluar
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow flex flex-col items-center p-4 max-w-4xl mx-auto w-full">
+
+        <!-- SCREEN 0: Login / Auth -->
+        <div id="screen-auth" class="screen active w-full max-w-md mt-12 mx-auto">
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 text-center">
+                <i class="fa-solid fa-lock text-brand-500 text-4xl mb-4"></i>
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">Masuk ke JFT-Basic</h2>
+                <p class="text-slate-500 mb-6 text-sm">Silakan login untuk mengakses simulasi latihan atau hubungi admin jika belum terdaftar.</p>
+                <div class="text-left mb-4">
+                    <label class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 block">Email</label>
+                    <input type="email" id="login-email" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-brand-500 transition" placeholder="email@contoh.com">
+                </div>
+                <div class="text-left mb-6">
+                    <label class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 block">Password (Auth Code)</label>
+                    <input type="password" id="login-password" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-brand-500 transition" placeholder="••••••••">
+                </div>
+                <button onclick="handleLogin()" id="btn-login" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 px-8 rounded-xl shadow-md transition-all flex items-center justify-center gap-2">
+                    Masuk <i class="fa-solid fa-right-to-bracket"></i>
+                </button>
+                <p id="login-error" class="text-red-500 text-sm mt-3 hidden">Email atau password salah.</p>
+            </div>
+        </div>
+
+        <!-- SCREEN 1: Home (Menu Latihan) -->
+        <div id="screen-home" class="screen w-full max-w-2xl mt-8"> 
+            <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-100 text-center">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand-50 text-brand-600 mb-4">
+                    <i class="fa-solid fa-graduation-cap text-3xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">Siap untuk Latihan?</h2>
+                <p class="text-slate-600 mb-8">Pilih mode simulasi dan jumlah soal untuk memulai latihan.</p>
+
+                <div class="text-left mb-6">
+                    <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-2">Nama Lengkap</h3>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fa-regular fa-user text-slate-400"></i>
+                        </div>
+                        <input type="text" id="user-name-input" class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-brand-500 transition text-slate-700 font-medium uppercase" placeholder="Masukkan nama Anda...">
+                    </div>
+                </div>
+
+                <div class="text-left mb-6">
+                    <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3">1. Pilih Mode Latihan</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <label class="relative flex cursor-pointer rounded-xl border border-slate-200 bg-white p-4 shadow-sm focus:outline-none hover:border-brand-300 hover:bg-slate-50 transition">
+                            <input type="radio" name="period" value="sep-nov" class="peer sr-only" checked />
+                            <div class="flex w-full justify-between items-center peer-checked:border-brand-500 peer-checked:ring-2 peer-checked:ring-brand-500 rounded-xl absolute inset-0 pointer-events-none transition"></div>
+                            <div class="flex flex-col gap-1 z-10">
+                                <span class="font-semibold text-slate-800"><i class="fa-regular fa-calendar-check text-brand-500 mr-2"></i>September–November</span>
+                                <span class="text-xs text-slate-500">Simulasi pola JFT-Basic</span>
+                            </div>
+                        </label>
+                        <label class="relative flex cursor-pointer rounded-xl border border-slate-200 bg-white p-4 shadow-sm focus:outline-none hover:border-brand-300 hover:bg-slate-50 transition">
+                            <input type="radio" name="period" value="random" class="peer sr-only" />
+                            <div class="flex w-full justify-between items-center peer-checked:border-brand-500 peer-checked:ring-2 peer-checked:ring-brand-500 rounded-xl absolute inset-0 pointer-events-none transition"></div>
+                            <div class="flex flex-col gap-1 z-10">
+                                <span class="font-semibold text-slate-800"><i class="fa-solid fa-shuffle text-brand-500 mr-2"></i>Random Practice</span>
+                                <span class="text-xs text-slate-500">Acak seluruh bank soal</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="text-left mb-8">
+                    <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3">2. Jumlah Soal</h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <label class="relative flex cursor-pointer rounded-lg border border-slate-200 bg-white p-3 shadow-sm hover:bg-slate-50 transition text-center justify-center">
+                            <input type="radio" name="q_count" value="10" class="peer sr-only" checked />
+                            <div class="flex w-full justify-between items-center peer-checked:border-brand-500 peer-checked:ring-2 peer-checked:ring-brand-500 rounded-lg absolute inset-0 pointer-events-none transition"></div>
+                            <span class="font-semibold text-slate-700 z-10">10 Soal</span>
+                        </label>
+                        <label class="relative flex cursor-pointer rounded-lg border border-slate-200 bg-white p-3 shadow-sm hover:bg-slate-50 transition text-center justify-center">
+                            <input type="radio" name="q_count" value="20" class="peer sr-only" />
+                            <div class="flex w-full justify-between items-center peer-checked:border-brand-500 peer-checked:ring-2 peer-checked:ring-brand-500 rounded-lg absolute inset-0 pointer-events-none transition"></div>
+                            <span class="font-semibold text-slate-700 z-10">20 Soal</span>
+                        </label>
+                        <label class="relative flex cursor-pointer rounded-lg border border-slate-200 bg-white p-3 shadow-sm hover:bg-slate-50 transition text-center justify-center">
+                            <input type="radio" name="q_count" value="30" class="peer sr-only" />
+                            <div class="flex w-full justify-between items-center peer-checked:border-brand-500 peer-checked:ring-2 peer-checked:ring-brand-500 rounded-lg absolute inset-0 pointer-events-none transition"></div>
+                            <span class="font-semibold text-slate-700 z-10">30 Soal</span>
+                        </label>
+                        <label class="relative flex cursor-pointer rounded-lg border border-slate-200 bg-white p-3 shadow-sm hover:bg-slate-50 transition text-center justify-center">
+                            <input type="radio" name="q_count" value="50" class="peer sr-only" />
+                            <div class="flex w-full justify-between items-center peer-checked:border-brand-500 peer-checked:ring-2 peer-checked:ring-brand-500 rounded-lg absolute inset-0 pointer-events-none transition"></div>
+                            <span class="font-semibold text-slate-700 z-10">50 Soal</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <button onclick="startQuiz()" class="w-full sm:w-auto bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 px-8 rounded-full shadow-md transition-all flex items-center justify-center gap-2 mx-auto mb-6">
+                    Mulai Latihan <i class="fa-solid fa-arrow-right"></i>
+                </button>
+                <span id="chat-notification-dot"
+      class="hidden absolute -top-1.5 -right-1.5 w-4 h-4 bg-emerald-500 border-2 border-[#181818] rounded-full animate-pulse">
+</span>
+                <!-- POSISI TOMBOL GLOBAL CHAT DI SCREEN 1 (HOME) -->
+<div class="mt-3 relative">
+    <button onclick="toggleGlobalChat()" class="w-full py-3 px-4 bg-[#62bddb] text-[#181818] border-[2px] border-[#181818] rounded-xl text-sm font-black shadow-[3px_3px_0_#181818] hover:-translate-y-1 hover:shadow-[5px_5px_0_#181818] transition-all flex items-center justify-center gap-2 relative">
+        <i class="fa-solid fa-comments text-lg"></i> Global Chat (Ruang Diskusi Siswa)
+    </button>
+</div>
+
+                <!-- KUIS HURUF UNTUK PEMULA -->
+                <div class="border-t-2 border-slate-200 pt-5 mt-5 text-left">
+                    <div class="flex items-center justify-between gap-3 mb-3">
+                        <div class="min-w-0">
+                            <h3 class="text-sm font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                                <i class="fa-solid fa-language text-brand-600"></i> Kuis Kana Pemula
+                            </h3>
+                            <p class="text-[11px] text-slate-500 mt-1">Latihan dasar. Hiragana dan Katakana dibuat terpisah.</p>
+                        </div>
+                        <span class="shrink-0 text-[9px] font-black px-2 py-1 rounded-lg border-[2px] border-[#181818] bg-white shadow-[2px_2px_0_#181818]">10 SOAL</span>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="openKanaQuiz('hiragana')" class="kana-launch-btn inline-flex items-center gap-2 px-3 py-2 bg-[#ffe45c] text-[#181818] border-[2px] border-[#181818] rounded-lg shadow-[2px_2px_0_#181818] hover:-translate-y-0.5 transition text-xs font-black">
+                            <span class="text-lg leading-none japanese-text">あ</span><span>Hiragana</span>
+                        </button>
+                        <button onclick="openKanaQuiz('katakana')" class="kana-launch-btn inline-flex items-center gap-2 px-3 py-2 bg-[#62bddb] text-[#181818] border-[2px] border-[#181818] rounded-lg shadow-[2px_2px_0_#181818] hover:-translate-y-0.5 transition text-xs font-black">
+                            <span class="text-lg leading-none japanese-text">ア</span><span>Katakana</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ETALASE MATERI GRATIS -->
+                <div class="border-t-2 border-slate-200 pt-5 mt-5 text-left">
+                    <div class="flex items-start justify-between gap-3 mb-3">
+                        <div>
+                            <h3 class="text-sm font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                                <i class="fa-solid fa-store text-emerald-600"></i> Etalase Materi Gratis
+                            </h3>
+                            <p class="text-[11px] text-slate-500 mt-1">Pilih materi untuk melihat detail, lalu buka sumbernya.</p>
+                        </div>
+                        <span class="shrink-0 bg-[#43c9bd] text-[#181818] px-2.5 py-1 rounded-lg border-[2px] border-[#181818] text-[9px] font-black shadow-[2px_2px_0_#181818]">GRATIS</span>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        <button onclick="openMaterialShelf(0)" class="material-shelf-btn text-left p-3 bg-white border-[2px] border-[#181818] rounded-xl shadow-[2px_2px_0_#181818] hover:-translate-y-0.5 transition">
+                            <div class="text-[9px] font-black uppercase text-slate-500">Minna no Nihongo</div><div class="font-black text-[#181818] text-sm mt-0.5">V1</div><div class="text-[10px] font-bold text-brand-700 mt-1">Lihat materi</div>
+                        </button>
+                        <button onclick="openMaterialShelf(1)" class="material-shelf-btn text-left p-3 bg-white border-[2px] border-[#181818] rounded-xl shadow-[2px_2px_0_#181818] hover:-translate-y-0.5 transition">
+                            <div class="text-[9px] font-black uppercase text-slate-500">Minna no Nihongo</div><div class="font-black text-[#181818] text-sm mt-0.5">V2</div><div class="text-[10px] font-bold text-brand-700 mt-1">Lihat materi</div>
+                        </button>
+                        <button onclick="openMaterialShelf(2)" class="material-shelf-btn text-left p-3 bg-[#f0ede5] border-[2px] border-[#181818] rounded-xl shadow-[2px_2px_0_#181818] hover:-translate-y-0.5 transition">
+                            <div class="text-[9px] font-black uppercase text-slate-500">Full Jepang</div><div class="font-black text-[#181818] text-sm mt-0.5">V1</div><div class="text-[10px] font-bold text-brand-700 mt-1">Lihat materi</div>
+                        </button>
+                        <button onclick="openMaterialShelf(3)" class="material-shelf-btn text-left p-3 bg-[#f0ede5] border-[2px] border-[#181818] rounded-xl shadow-[2px_2px_0_#181818] hover:-translate-y-0.5 transition">
+                            <div class="text-[9px] font-black uppercase text-slate-500">Full Jepang</div><div class="font-black text-[#181818] text-sm mt-0.5">V2</div><div class="text-[10px] font-bold text-brand-700 mt-1">Lihat materi</div>
+                        </button>
+                        <button onclick="openMaterialShelf(4)" class="material-shelf-btn text-left p-3 bg-[#ffe45c] border-[2px] border-[#181818] rounded-xl shadow-[2px_2px_0_#181818] hover:-translate-y-0.5 transition col-span-2 sm:col-span-1">
+                            <div class="text-[9px] font-black uppercase text-slate-600">Kotoba</div><div class="font-black text-[#181818] text-sm mt-0.5">Bab 1–50</div><div class="text-[10px] font-bold text-brand-700 mt-1">Lihat materi</div>
+                        </button>
+                    </div>
+
+                <!-- LEADERBOARD / PAPAN PERINGKAT -->
+                <div class="border-t-2 border-slate-200 pt-5 mt-5 text-left">
+                    <button onclick="toggleLeaderboard()" class="w-full py-3 px-4 bg-[#ffe45c] text-[#181818] border-[2px] border-[#181818] rounded-xl text-sm font-black shadow-[3px_3px_0_#181818] hover:-translate-y-1 hover:shadow-[5px_5px_0_#181818] transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-trophy text-lg text-amber-600"></i> Lihat Papan Peringkat (Leaderboard)
+                    </button>
+
+                    <div id="leaderboard-container" class="hidden mt-4 text-left bg-white p-4 rounded-xl border-[2px] border-[#181818] shadow-[4px_4px_0_#181818]">
+                        <div class="flex justify-between items-center mb-3 border-b-2 border-[#181818] pb-2">
+                            <h4 class="font-black text-slate-800 text-sm uppercase flex items-center gap-2">
+                                <i class="fa-solid fa-medal text-amber-500"></i> Top Skor Siswa
+                            </h4>
+                            <button onclick="toggleLeaderboard()" class="text-xs font-bold text-slate-500 hover:text-red-500" aria-label="Tutup leaderboard"><i class="fa-solid fa-xmark text-base"></i></button>
+                        </div>
+
+                        <div class="grid grid-cols-4 gap-1 mb-3 text-xs font-bold">
+                            <button onclick="setLeaderboardFilter(10)" id="l-btn-10" class="py-1.5 px-1 rounded-lg border-[2px] border-[#181818] bg-[#ffe45c] text-center shadow-[2px_2px_0_#181818] transition-all">10 Soal</button>
+                            <button onclick="setLeaderboardFilter(20)" id="l-btn-20" class="py-1.5 px-1 rounded-lg border-[2px] border-[#181818] bg-white text-center shadow-[2px_2px_0_#181818] transition-all">20 Soal</button>
+                            <button onclick="setLeaderboardFilter(30)" id="l-btn-30" class="py-1.5 px-1 rounded-lg border-[2px] border-[#181818] bg-white text-center shadow-[2px_2px_0_#181818] transition-all">30 Soal</button>
+                            <button onclick="setLeaderboardFilter(50)" id="l-btn-50" class="py-1.5 px-1 rounded-lg border-[2px] border-[#181818] bg-white text-center shadow-[2px_2px_0_#181818] transition-all">50 Soal</button>
+                        </div>
+
+                        <div id="leaderboard-list" class="space-y-2.5 max-h-64 overflow-y-auto pr-1">
+                            <p class="text-center text-xs text-slate-500 py-4 font-bold">Memuat peringkat...</p>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SCREEN 2: Quiz -->
+        <div id="screen-quiz" class="screen w-full mt-4">
+            <div class="bg-white p-4 rounded-t-2xl border-b border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <span id="quiz-section-badge" class="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-semibold japanese-text">文字と語彙</span>
+                    <span id="quiz-progress-text" class="text-sm font-medium text-slate-600">Soal 1 / 20</span>
+                </div>
+                <div class="w-full sm:w-1/2 h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div id="quiz-progress-bar" class="h-full bg-brand-500 transition-all duration-300" style="width: 5%"></div>
+                </div>
+                <div id="quiz-timer" class="text-slate-600 font-mono font-medium flex items-center gap-2 w-full sm:w-auto justify-end">
+                    <i class="fa-regular fa-clock"></i> <span>00:00</span>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 sm:p-8 rounded-b-2xl shadow-sm border border-t-0 border-slate-100 min-h-[400px] flex flex-col">
+                <div class="mb-6">
+                    <p id="quiz-instruction" class="text-sm text-slate-500 mb-2 japanese-text">つぎの ぶんの （　　　）に なにを いれますか。</p>
+                    <button id="btn-play-audio" class="hidden mb-4 bg-brand-100 hover:bg-brand-200 text-brand-700 py-2 px-4 rounded-lg flex items-center gap-2 transition font-medium" onclick="playQuestionAudio()">
+                        <i class="fa-solid fa-volume-high"></i> Putar Audio
+                    </button>
+                    <button id="btn-show-transcript" class="hidden mb-4 text-sm text-slate-500 hover:text-brand-600 underline transition" onclick="showTranscript()">
+                        
+                    </button>
+                    <div id="audio-transcript-fallback" class="hidden mb-4 p-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 japanese-text whitespace-pre-wrap text-sm leading-relaxed"></div>
+                    <h3 id="quiz-question" class="text-xl sm:text-2xl font-medium text-slate-800 japanese-text leading-relaxed whitespace-pre-wrap"></h3>
+                    <div id="quiz-image-container" class="hidden" aria-live="polite"></div>
+                </div>
+                <div id="quiz-options" class="flex-grow flex flex-col gap-3"></div>
+                <div class="mt-8 flex justify-between gap-3">
+    
+    <button
+        id="btn-prev-question"
+        onclick="previousQuestion()"
+        class="bg-slate-200 text-slate-700 font-medium py-2.5 px-6 rounded-lg transition-colors flex items-center gap-2 border-2 border-slate-700 shadow-[3px_3px_0_#1f2937] opacity-50 cursor-not-allowed"
+        disabled
+    >
+        <i class="fa-solid fa-angle-left"></i>
+        Kembali
+    </button>
+
+    <button
+        id="btn-next-question"
+        onclick="nextQuestion()"
+        class="bg-brand-600 hover:bg-brand-700 text-white font-medium py-2.5 px-6 rounded-lg transition-colors flex items-center gap-2 border-2 border-slate-700 shadow-[3px_3px_0_#1f2937] opacity-50 cursor-not-allowed"
+        disabled
+    >
+        Selanjutnya
+        <i class="fa-solid fa-angle-right"></i>
+    </button>
+
+</div>
+            </div>
+            <button onclick="confirmQuit()" class="mt-4 text-slate-400 hover:text-red-500 text-sm transition flex items-center gap-1 mx-auto">
+                <i class="fa-solid fa-xmark"></i> Akhiri latihan lebih awal
+            </button>
+        </div>
+
+        <!-- SCREEN 3: Results -->
+        <div id="screen-result" class="screen w-full mt-4">
+            <div class="flex justify-between items-center mb-4 px-2">
+                <h2 class="text-xl font-bold text-slate-800">Hasil Latihan</h2>
+                <div class="flex gap-2">
+                    <button onclick="navigate('home')" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition">Beranda</button>
+                    <button onclick="window.print()" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
+                        <i class="fa-solid fa-print"></i> Cetak
+                    </button>
+                </div>
+            </div>
+
+            <div class="certificate-container p-6 sm:p-8 mb-8" id="certificate-area">
+                <div class="flex flex-col sm:flex-row justify-between items-start border-b-2 border-slate-200 pb-6 mb-6">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-2xl font-black tracking-tighter text-slate-800">JFT-Basic</span>
+                            <span class="text-xs text-slate-500 japanese-text mt-1">国際交流基金 日本語基礎テスト</span>
+                        </div>
+                        <h1 class="text-lg font-bold text-slate-800 japanese-text">模擬試験 判定結果通知書</h1>
+                        <h2 class="text-sm text-slate-600">Japan Foundation Test for Basic Japanese Practice Assessment Result</h2>
+                    </div>
+                    <div class="mt-4 sm:mt-0 flex flex-col items-end text-brand-700 opacity-80">
+                        <i class="fa-brands fa-pagelines text-3xl mb-1"></i>
+                        <span class="text-xs font-semibold">JAPAN FOUNDATION</span>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-6 mb-8">
+                    <div class="w-32 h-40 bg-slate-100 flex flex-col items-center justify-center text-slate-300 border border-slate-200 mx-auto sm:mx-0 shrink-0 relative cursor-pointer group overflow-hidden" onclick="document.getElementById('photo-upload').click()" title="Klik untuk mengubah foto">
+                        <img id="user-photo-img" src="" class="w-full h-full object-cover hidden absolute inset-0 z-10" alt="User Photo">
+                        <div id="photo-placeholder" class="flex flex-col items-center p-2 text-center z-0">
+                            <i class="fa-solid fa-camera text-4xl mb-2 text-slate-400"></i>
+                            <span class="text-[10px] text-slate-500 font-medium leading-tight">Klik untuk<br>pasang foto</span>
+                        </div>
+                        <input type="file" id="photo-upload" class="hidden" accept="image/*" onchange="handlePhotoUpload(event)">
+                    </div>
+                    
+                    <div class="flex-grow text-sm grid grid-cols-[120px_1fr] gap-y-2 gap-x-4 items-center">
+                        <div class="text-slate-500 japanese-text">受験番号<br><span class="text-[10px] block -mt-1">Registration Number</span></div>
+                        <div class="font-medium">: <span id="res-reg-num"></span></div>
+                        
+                        <div class="text-slate-500 japanese-text">氏名<br><span class="text-[10px] block -mt-1">Name</span></div>
+                        <div class="font-medium text-lg flex items-center gap-2">
+                            : <span id="res-name"></span>
+                            <button onclick="editName()" class="text-slate-400 hover:text-brand-600 transition p-1 bg-slate-50 hover:bg-slate-100 rounded" title="Edit Nama">
+                                <i class="fa-solid fa-pen text-xs"></i>
+                            </button>
+                        </div>
+
+                        <div class="text-slate-500 japanese-text">国籍<br><span class="text-[10px] block -mt-1">Nationality</span></div>
+                        <div class="font-medium">: Indonesia</div>
+
+                        <div class="text-slate-500 japanese-text">受験地<br><span class="text-[10px] block -mt-1">Test Location</span></div>
+                        <div class="font-medium">: Practice Online</div>
+
+                        <div class="text-slate-500 japanese-text">受験日<br><span class="text-[10px] block -mt-1">Test Date</span></div>
+                        <div class="font-medium">: <span id="res-date"></span></div>
+                    </div>
+                </div>
+
+                <div class="border border-slate-200 p-6 bg-slate-50/50">
+                    <div class="flex flex-col sm:flex-row justify-between mb-8">
+                        <div class="flex gap-12">
+                            <div>
+                                <div class="text-slate-500 text-sm japanese-text">総合得点:<br><span class="text-xs block">Total Score</span></div>
+                                <div class="text-4xl font-bold text-slate-800 mt-2" id="res-total-score"></div>
+                            </div>
+                            <div>
+                                <div class="text-slate-500 text-sm japanese-text">判定結果:<br><span class="text-xs block">Assessment Results</span></div>
+                                <div class="text-3xl font-bold text-slate-800 mt-2" id="res-level"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="score-bar-container">
+                        <div class="score-marker" style="left: 0%;"><span>10</span></div>
+                        <div class="score-marker" style="left: 56.25%;"><span>145<br><span class="text-[10px] font-normal">A1</span></span></div>
+                        <div class="score-marker" style="left: 68.75%;"><span>175<br><span class="text-[10px] font-normal">A2.1</span></span></div>
+                        <div class="score-marker" style="left: 79.16%;"><span>200<br><span class="text-[10px] font-normal">A2.2(A2)</span></span></div>
+                        <div class="score-marker" style="left: 100%;"><span>250</span></div>
+                        <div id="res-score-indicator" class="score-indicator" style="left: 10%;"><span id="res-score-val-float" class="score-indicator-value">10</span></div>
+                    </div>
+                    <div class="mt-16 border-t border-slate-200 pt-6">
+                        <div class="grid gap-4" id="res-sections-container"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 mb-8">
+                <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Detail Evaluasi</h3>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-slate-50 p-3 rounded-lg text-center"><div class="text-xs text-slate-500">Total Soal</div><div class="text-xl font-bold" id="eval-total">0</div></div>
+                    <div class="bg-green-50 p-3 rounded-lg text-center"><div class="text-xs text-green-600">Benar</div><div class="text-xl font-bold text-green-700" id="eval-correct">0</div></div>
+                    <div class="bg-red-50 p-3 rounded-lg text-center"><div class="text-xs text-red-600">Salah</div><div class="text-xl font-bold text-red-700" id="eval-wrong">0</div></div>
+                    <div class="bg-blue-50 p-3 rounded-lg text-center"><div class="text-xs text-blue-600">Akurasi</div><div class="text-xl font-bold text-blue-700" id="eval-accuracy">0%</div></div>
+                </div>
+                <h4 class="font-medium text-slate-700 mb-3">Review Jawaban yang Salah</h4>
+                <div id="mistakes-container" class="space-y-4"></div>
+            </div>
+        </div>
+
+        <!-- SCREEN 4: History -->
+        <div id="screen-history" class="screen w-full max-w-2xl mt-4">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-4">
+                    <button onclick="navigate('home')" class="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50"><i class="fa-solid fa-arrow-left"></i></button>
+                    <h2 class="text-2xl font-bold text-slate-800">Riwayat Latihan</h2>
+                </div>
+                <button onclick="clearHistory()" class="text-sm font-medium text-red-600 bg-red-50 px-4 py-2 rounded-lg flex items-center gap-2 border border-red-100"><i class="fa-solid fa-trash-can"></i> Hapus Semua</button>
+            </div>
+            <div id="history-container" class="space-y-4"></div>
+            <div id="empty-history" class="text-center py-12 hidden"><p class="text-slate-500">Belum ada riwayat latihan.</p></div>
+        </div>
+
+                <!-- SCREEN 5: Admin Dashboard -->
+        <div id="screen-admin" class="screen w-full max-w-6xl mt-4 mx-auto px-2">
+            <div class="bg-[#fffdf8] p-6 sm:p-8 rounded-2xl border-[3px] border-[#181818] shadow-[8px_8px_0_#181818] mb-12">
+
+                <!-- HEADER ADMIN PANEL -->
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b-[3px] border-[#181818] pb-5 gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-[#ffe45c] border-[2px] border-[#181818] rounded-xl flex items-center justify-center shadow-[3px_3px_0_#181818] text-xl">
+                            <i class="fa-solid fa-shield-halved text-[#181818]"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-black text-[#181818] tracking-tight">Admin Control Panel</h2>
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Kelola Akses Pengguna & Bank Soal JFT-Basic</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="openAdminGlobalChat()" class="px-5 py-2.5 bg-[#62bddb] text-[#181818] border-[2px] border-[#181818] rounded-xl text-sm font-black shadow-[3px_3px_0_#181818] hover:-translate-y-1 hover:shadow-[5px_5px_0_#181818] transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-comments"></i> Global Chat
+                        </button>
+                        <button onclick="handleLogout()" class="px-5 py-2.5 bg-[#ff7373] text-[#181818] border-[2px] border-[#181818] rounded-xl text-sm font-black shadow-[3px_3px_0_#181818] hover:-translate-y-1 hover:shadow-[5px_5px_0_#181818] transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-right-from-bracket"></i> Keluar Sistem
+                        </button>
+                    </div>
+                </div>
+                
+
+                                <!-- KONTROL ROOM CHAT DI ADMIN PANEL -->
+<div class="mb-5 bg-[#ffe45c] p-4 rounded-xl border-[2px] border-[#181818] shadow-[3px_3px_0_#181818] flex justify-between items-center">
+    <div>
+        <h4 class="font-black text-[#181818] text-sm">Status Ruang Global Chat</h4>
+        <p class="text-xs text-slate-700">Tutup room untuk menghentikan siswa mengirim pesan.</p>
+    </div>
+    <button id="btn-toggle-room" onclick="adminToggleRoomChat()" class="px-4 py-2 bg-[#ff7373] text-[#181818] border-[2px] border-[#181818] rounded-xl text-xs font-black shadow-[2px_2px_0_#181818] hover:-translate-y-0.5 transition">
+        Tutup Room Chat
+    </button>
+</div>
+
+<!-- PROFIL NAMA ADMIN UNTUK GLOBAL CHAT -->
+<div class="mb-5 bg-white p-4 rounded-xl border-[2px] border-[#181818] shadow-[3px_3px_0_#181818] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div class="flex items-center gap-3 min-w-0">
+        <div class="w-10 h-10 rounded-xl bg-[#62bddb] border-[2px] border-[#181818] shadow-[2px_2px_0_#181818] flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-user-shield text-[#181818]"></i>
+        </div>
+        <div class="min-w-0">
+            <div class="text-[10px] font-black uppercase tracking-wider text-slate-500">Identitas Global Chat</div>
+            <div class="font-black text-[#181818] truncate"><span id="admin-chat-name-display">Belum diatur</span></div>
+        </div>
+    </div>
+    <button onclick="openAdminChatNameModal()" class="px-4 py-2 bg-[#ffe45c] text-[#181818] border-[2px] border-[#181818] rounded-xl text-xs font-black shadow-[2px_2px_0_#181818] hover:-translate-y-0.5 transition shrink-0">
+        <i class="fa-solid fa-pen-to-square mr-1"></i> Ganti Nama Admin
+    </button>
+</div>
+
+<!-- Kontrol Khusus Admin -->
+<div id="admin-chat-controls" style="display: none; margin: 12px 0; padding: 12px 16px; background: #ffe4e6; border: 3px solid #000000; border-radius: 12px; box-shadow: 4px 4px 0px #000000; align-items: center; justify-content: space-between;">
+    <span style="font-size: 13px; font-weight: 800; color: #000000;">Panel Kontrol Admin</span>
+    <button id="jft-clear-chat-btn" style="background: #ff4d4d; color: white; border: 2px solid #000000; padding: 6px 14px; font-size: 13px; font-weight: 700; border-radius: 8px; cursor: pointer; box-shadow: 2px 2px 0px #000000;">
+        🗑 Clear All Chat
+    </button>
+</div>
+
+<!-- Custom Modal Konfirmasi Hapus Chat -->
+<div id="jft-confirm-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 10000; align-items: center; justify-content: center;">
+    <div style="background: #ffffff; width: 85%; max-width: 360px; padding: 20px; border: 3px solid #000000; border-radius: 12px; box-shadow: 5px 5px 0px #000000; text-align: center; transform: scale(1); animation: jftScaleUp 0.2s ease;">
+        <div style="font-size: 32px; margin-bottom: 8px;">⚠️</div>
+        <h3 style="margin: 0 0 8px 0; color: #000000; font-size: 16px; font-weight: 800;">Hapus Semua Chat?</h3>
+        <p style="margin: 0 0 20px 0; color: #333333; font-size: 13px; line-height: 1.4;">Tindakan ini akan menghapus seluruh riwayat percakapan secara permanen.</p>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <button id="jft-cancel-btn" style="flex: 1; background: #e0e0e0; color: #000; border: 2px solid #000; padding: 8px; border-radius: 8px; font-weight: 700; cursor: pointer; box-shadow: 2px 2px 0px #000;">Batal</button>
+            <button id="jft-yes-delete-btn" style="flex: 1; background: #ff4d4d; color: white; border: 2px solid #000; padding: 8px; border-radius: 8px; font-weight: 700; cursor: pointer; box-shadow: 2px 2px 0px #000;">Hapus</button>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Modal Sukses Hapus Chat -->
+<div id="jft-success-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 10001; align-items: center; justify-content: center;">
+    <div style="background: #ffffff; width: 85%; max-width: 360px; padding: 20px; border: 3px solid #000000; border-radius: 12px; box-shadow: 5px 5px 0px #000000; text-align: center; animation: jftScaleUp 0.2s ease;">
+        <div style="font-size: 32px; margin-bottom: 8px;">🎉</div>
+        <h3 style="margin: 0 0 8px 0; color: #000000; font-size: 16px; font-weight: 800;">Berhasil!</h3>
+        <p style="margin: 0 0 20px 0; color: #333333; font-size: 13px; line-height: 1.4;">Semua riwayat chat berhasil dibersihkan dari database.</p>
+        <button id="jft-success-ok-btn" style="width: 100%; background: #4ade80; color: #000; border: 2px solid #000; padding: 8px; border-radius: 8px; font-weight: 700; cursor: pointer; box-shadow: 2px 2px 0px #000;">OK</button>
+    </div>
+</div>
+
+
+
+
+
+                <!-- TAB NAVIGASI ADMIN -->
+                <div class="flex gap-3 mb-6">
+                    <button onclick="switchAdminTab('users')" id="tab-users" class="px-5 py-2.5 rounded-xl text-sm font-black border-[2px] border-[#181818] bg-[#ffe45c] text-[#181818] shadow-[3px_3px_0_#181818] transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-users"></i> Data Pengguna & Sesi
+                    </button>
+                    <button onclick="switchAdminTab('questions')" id="tab-questions" class="px-5 py-2.5 rounded-xl text-sm font-black border-[2px] border-[#181818] bg-white text-slate-700 shadow-[3px_3px_0_#181818] hover:bg-slate-50 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-book-open"></i> Kunci Jawaban Soal
+                    </button>
+                </div>
+
+                <!-- VIEW 1: DATA PENGGUNA -->
+                <div id="admin-view-users" class="block">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5 gap-3">
+                        <div>
+                            <h3 class="font-black text-slate-800 text-lg flex items-center gap-2">
+                                <span class="w-3 h-3 bg-[#43c9bd] border-[2px] border-[#181818] rounded-full inline-block"></span> 
+                                Manajemen Akun Terdaftar
+                            </h3>
+                            <p class="text-xs text-slate-500 font-medium">Pantau perangkat aktif dan riwayat skor tiap akun siswa.</p>
+                        </div>
+                        <button onclick="toggleAddUserForm()" class="px-4 py-2.5 bg-[#43c9bd] text-[#181818] border-[2px] border-[#181818] rounded-xl text-xs font-black shadow-[3px_3px_0_#181818] hover:-translate-y-1 hover:shadow-[5px_5px_0_#181818] hover:bg-[#62bddb] transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-user-plus text-sm"></i> Tambah Akun Baru
+                        </button>
+                    </div>
+
+                    <!-- FORM TAMBAH USER -->
+                    <div id="add-user-form" class="hidden bg-[#fffdf8] p-6 rounded-2xl border-[3px] border-[#181818] shadow-[6px_6px_0_#181818] mb-6 transition-all mt-2">
+                        <div class="flex justify-between items-center border-b-2 border-[#181818] pb-3 mb-4">
+                            <h4 class="font-black text-slate-800 text-sm uppercase tracking-wider flex items-center gap-2">
+                                <i class="fa-solid fa-circle-plus text-brand-600"></i> Form Registrasi Pengguna Baru
+                            </h4>
+                            <button onclick="toggleAddUserForm()" class="text-slate-500 hover:text-red-500 font-bold"><i class="fa-solid fa-xmark text-lg"></i></button>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+                            <div>
+                                <label class="block text-xs font-black uppercase text-slate-700 mb-1">Nama Lengkap</label>
+                                <input type="text" id="new-name" placeholder="Mis: Budi Santoso" class="w-full px-4 py-3 border-[2px] border-[#181818] rounded-xl text-sm focus:outline-none focus:shadow-[4px_4px_0_#181818] focus:-translate-y-0.5 transition-all bg-white font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-black uppercase text-slate-700 mb-1">Email (Opsional)</label>
+                                <input type="email" id="new-email" placeholder="budi@email.com" class="w-full px-4 py-3 border-[2px] border-[#181818] rounded-xl text-sm focus:outline-none focus:shadow-[4px_4px_0_#181818] focus:-translate-y-0.5 transition-all bg-white font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-black uppercase text-slate-700 mb-1">Auth Code (Password)</label>
+                                <input type="text" id="new-authcode" placeholder="Kode Unik Login" class="w-full px-4 py-3 border-[2px] border-[#181818] rounded-xl text-sm focus:outline-none focus:shadow-[4px_4px_0_#181818] focus:-translate-y-0.5 transition-all bg-white font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-black uppercase text-slate-700 mb-1">Maks. Perangkat & Role</label>
+                                <div class="flex gap-2">
+                                    <input type="number" id="new-max-users" placeholder="Kuota" value="1" min="1" class="w-1/2 px-3 py-3 border-[2px] border-[#181818] rounded-xl text-sm font-black text-center bg-white" title="Batas perangkat">
+                                    <select id="new-role" class="w-1/2 px-2 py-3 border-[2px] border-[#181818] rounded-xl text-xs font-black bg-[#ffe45c] text-[#181818] cursor-pointer">
+                                        <option value="user">User</option>
+                                        <option value="admin">Admin</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-end gap-3 pt-2 border-t border-slate-200">
+                            <button onclick="toggleAddUserForm()" class="px-5 py-2.5 bg-[#f0ede5] text-[#181818] border-[2px] border-[#181818] rounded-xl text-xs font-black shadow-[3px_3px_0_#181818] hover:-translate-y-0.5 transition-all">Batal</button>
+                            <button onclick="simpanUserBaru()" id="btn-simpan-user" class="px-6 py-2.5 bg-[#43c9bd] text-[#181818] border-[2px] border-[#181818] rounded-xl text-xs font-black shadow-[3px_3px_0_#181818] hover:-translate-y-0.5 hover:bg-[#62bddb] transition-all">Simpan Data Akun</button>
+                        </div>
+                    </div>
+
+                    <!-- TABEL PENGGUNA (CARD / TABLE HYBRID YANG ESTETIK) -->
+                    <div class="overflow-x-auto border-[2.5px] border-[#181818] rounded-2xl shadow-[5px_5px_0_#181818] bg-white">
+                        <table class="w-full text-left text-sm text-slate-700">
+                            <thead class="bg-[#ffe45c] text-[#181818] font-black uppercase text-xs border-b-[2.5px] border-[#181818]">
+                                <tr>
+                                    <th class="px-5 py-4 border-r-[2px] border-[#181818]">Informasi Akun & Perangkat</th>
+                                    <th class="px-5 py-4 border-r-[2px] border-[#181818]">Auth Code</th>
+                                    <th class="px-5 py-4 border-r-[2px] border-[#181818] text-center">Status Kuota</th>
+                                    <th class="px-5 py-4 border-r-[2px] border-[#181818]">Level Role</th>
+                                    <th class="px-5 py-4 text-center">Tindakan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-user-table" class="divide-y-[2px] divide-[#181818]">
+                                <tr><td colspan="5" class="px-5 py-10 text-center font-bold text-slate-400">Memuat data dari database...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- VIEW 2: BANK SOAL -->
+                <div id="admin-view-questions" class="hidden">
+                    <div class="flex justify-between items-center mb-5 bg-[#f0ede5] p-4 rounded-xl border-[2px] border-[#181818] shadow-[3px_3px_0_#181818]">
+                        <div>
+                            <h3 class="font-black text-slate-800 text-base">Daftar Bank Soal & Kunci Jawaban</h3>
+                            <p class="text-xs text-slate-500 font-medium">Seluruh modul pertanyaan simulasi JFT-Basic.</p>
+                        </div>
+                        <span class="bg-[#ffe45c] text-[#181818] px-3 py-1.5 rounded-lg text-xs font-black border-[2px] border-[#181818] shadow-[2px_2px_0_#181818]" id="total-questions-count">0 Soal</span>
+                    </div>
+                    <div class="space-y-4 max-h-[600px] overflow-y-auto pr-2" id="admin-questions-list"></div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- CUSTOM CONFIRM MODAL (NEO-BRUTALISM) -->
+        <div id="custom-confirm-modal" class="fixed inset-0 z-[210] hidden items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+            <div class="bg-[#fffdf8] p-6 rounded-2xl border-[3px] border-[#181818] shadow-[8px_8px_0_#181818] max-w-sm w-full transform transition-all scale-95 opacity-0" id="custom-confirm-box">
+                <h3 class="text-xl font-black text-[#181818] mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-triangle-exclamation text-[#ff7373]"></i> Konfirmasi
+                </h3>
+                <p id="custom-confirm-msg" class="text-slate-700 font-medium mb-6">Pesan di sini</p>
+                <div class="flex justify-end gap-3">
+                    <button onclick="hideCustomConfirm()" class="px-4 py-2 bg-[#f0ede5] text-[#181818] border-[2px] border-[#181818] rounded-xl text-sm font-bold shadow-[3px_3px_0_#181818] hover:-translate-y-1 hover:shadow-[5px_5px_0_#181818] transition-all">Batal</button>
+                    <button id="btn-confirm-ok" class="px-4 py-2 bg-[#ff7373] text-[#181818] border-[2px] border-[#181818] rounded-xl text-sm font-bold shadow-[3px_3px_0_#181818] hover:-translate-y-1 hover:shadow-[5px_5px_0_#181818] transition-all">Ya</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CUSTOM PROMPT MODAL - WAJIB GANTI NAMA -->
+<div id="custom-name-modal" class="fixed inset-0 z-[210] hidden items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+    <div class="bg-[#fffdf8] p-6 rounded-2xl border-[3px] border-[#181818] shadow-[8px_8px_0_#181818] max-w-sm w-full">
+
+        <h3 class="text-xl font-black text-[#181818] mb-2 flex items-center gap-2">
+            <i class="fa-solid fa-user-pen text-[#43c9bd]"></i>
+            Atur Nama
+        </h3>
+
+        <p class="text-slate-700 font-medium mb-4 text-sm">
+            Silakan masukkan nama yang akan digunakan di website.
+            Nama ini wajib diisi dan tidak boleh sama dengan nama akun dari admin.
+        </p>
+
+        <input
+            type="text"
+            id="required-custom-name"
+            maxlength="30"
+            autocomplete="off"
+            class="w-full px-4 py-3 rounded-xl border-[2px] border-[#181818] bg-white font-bold uppercase focus:outline-none focus:ring-2 focus:ring-[#43c9bd]"
+            placeholder="Masukkan nama..."
+        >
+
+        <p id="required-name-error"
+           class="hidden text-rose-500 text-xs font-bold mt-2">
+        </p>
+
+        <button
+            onclick="saveRequiredCustomName()"
+            class="w-full mt-4 px-4 py-3 bg-[#43c9bd] text-[#181818] border-[2px] border-[#181818] rounded-xl font-black shadow-[3px_3px_0_#181818] hover:-translate-y-0.5 transition">
+            Simpan Nama
+        </button>
+
+    </div>
+</div>
+
+<!-- MODAL NAMA KHUSUS ADMIN -->
+<div id="admin-chat-name-modal" class="fixed inset-0 z-[230] hidden items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+    <div class="bg-[#fffdf8] p-6 rounded-2xl border-[3px] border-[#181818] shadow-[8px_8px_0_#181818] max-w-sm w-full">
+        <div class="flex items-start gap-3 mb-4">
+            <div class="w-11 h-11 rounded-xl bg-[#62bddb] border-[2px] border-[#181818] shadow-[3px_3px_0_#181818] flex items-center justify-center text-lg shrink-0">
+                <i class="fa-solid fa-user-shield"></i>
+            </div>
+            <div>
+                <div class="text-[10px] font-black uppercase tracking-widest text-slate-500">Identitas Moderator</div>
+                <h3 class="text-xl font-black text-[#181818]">Atur Nama Admin</h3>
+            </div>
+        </div>
+        <p class="text-sm text-slate-700 font-medium mb-4">Nama ini akan tampil di Global Chat. Gunakan nama yang ingin dilihat siswa.</p>
+        <div class="bg-[#e9f8fc] border-[2px] border-[#181818] rounded-xl px-3 py-2 mb-3 text-xs font-black text-[#181818]">
+            <i class="fa-solid fa-circle-check text-[#1597b5] mr-1"></i> Pesan admin akan tampil menggunakan nama yang kamu pilih.
+        </div>
+        <input type="text" id="admin-chat-name-input" maxlength="30" autocomplete="off" class="w-full px-4 py-3 rounded-xl border-[2px] border-[#181818] bg-white font-bold uppercase focus:outline-none focus:ring-2 focus:ring-[#62bddb]" placeholder="Contoh: SENSEI / ADMIN JFT">
+        <p id="admin-chat-name-error" class="hidden text-rose-500 text-xs font-bold mt-2"></p>
+        <div class="flex gap-2 mt-4">
+            <button onclick="closeAdminChatNameModal()" class="flex-1 px-4 py-3 bg-[#f0ede5] text-[#181818] border-[2px] border-[#181818] rounded-xl font-black shadow-[3px_3px_0_#181818]">Batal</button>
+            <button onclick="saveAdminChatName()" class="flex-1 px-4 py-3 bg-[#62bddb] text-[#181818] border-[2px] border-[#181818] rounded-xl font-black shadow-[3px_3px_0_#181818] hover:-translate-y-0.5 transition shadow-[3px_3px_0_#181818]">Simpan Nama</button>
+        </div>
+    </div>
+</div>
+    </main>
+
+        <!-- GLOBAL CHAT OVERLAYS: di luar semua .screen agar juga tampil dari Admin -->
+<!-- MODAL GLOBAL CHAT -->
+<div id="global-chat-modal" onclick="if(event.target===this) toggleGlobalChat();" class="hidden fixed inset-0 z-[1000] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div class="bg-[#fffdf8] w-full max-w-lg h-[550px] rounded-2xl border-[3px] border-[#181818] shadow-[8px_8px_0_#181818] flex flex-col overflow-hidden">
+        <!-- Header Chat -->
+        <div class="bg-[#ffe45c] p-3 border-b-[3px] border-[#181818] flex justify-between items-center gap-3">
+            <div class="min-w-0">
+                <h3 class="font-black text-[#181818] text-base flex items-center gap-2">
+                    <i class="fa-solid fa-earth-asia text-brand-600"></i> Global Chat JFT-Basic
+                </h3>
+                <p class="mt-0.5 text-[9px] font-bold text-slate-600 uppercase tracking-wide truncate">
+                    Aktif sebagai <span id="chat-current-name" class="font-black text-[#181818]">USER1</span> • Geser bubble ke kanan untuk balas
+                </p>
+            </div>
+            <button onclick="toggleGlobalChat()" class="w-8 h-8 bg-white border-[2px] border-[#181818] rounded-lg font-black shadow-[2px_2px_0_#181818] hover:bg-rose-300 transition flex items-center justify-center">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- Area Pesan Masuk -->
+        <div id="chat-messages-container" class="flex-grow p-4 overflow-y-auto space-y-3 bg-[#f8f3e8]">
+            <p class="text-center text-xs text-slate-400 font-bold">Memuat pesan...</p>
+        </div>
+
+        <!-- Preview Kotak Reply (Jika sedang mereply) -->
+        <div id="reply-preview-box" class="hidden px-4 py-2 bg-slate-100 border-t-[2px] border-[#181818] flex justify-between items-center text-xs">
+            <div>
+                <span class="font-black text-brand-700" id="reply-preview-user"></span>
+                <p class="text-slate-600 truncate max-w-[380px]" id="reply-preview-text"></p>
+            </div>
+            <button onclick="cancelReply()" class="text-slate-500 hover:text-rose-600 font-bold"><i class="fa-solid fa-xmark text-sm"></i></button>
+        </div>
+
+        <!-- Input, Tag, & Tombol Kirim -->
+        <div class="p-3 bg-white border-t-[3px] border-[#181818] flex flex-col gap-2">
+            <!-- Pilihan Tag User Cepat -->
+            <div id="tag-suggestions" class="flex gap-1 overflow-x-auto pb-1 text-[10px] hidden"></div>
+            <div class="flex gap-2">
+                <input type="text" id="chat-input-msg" placeholder="Tulis pesan (gunakan @ untuk tag)..." class="flex-grow px-3 py-2 border-[2px] border-[#181818] rounded-xl text-sm font-medium focus:outline-none focus:shadow-[3px_3px_0_#181818]" onkeypress="handleChatKeyPress(event)" oninput="checkChatInput(event)">
+                <button id="chat-send-btn" onclick="sendGlobalMessage()" class="px-5 py-2 bg-[#43c9bd] text-[#181818] border-[2px] border-[#181818] rounded-xl font-black text-sm shadow-[3px_3px_0_#181818] hover:-translate-y-0.5 transition">
+                    Kirim <i class="fa-solid fa-paper-plane ml-1"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- MODAL / POP-UP MENU KETIKA BUBBLE CHAT DI-TEKAN LAMA (LONG PRESS) -->
+<div id="chat-action-modal" onclick="if(event.target===this) closeChatActionModal();" class="fixed inset-0 z-[1100] hidden items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div class="bg-[#fffdf8] w-full max-w-xs rounded-2xl border-[3px] border-[#181818] shadow-[6px_6px_0_#181818] p-4 flex flex-col gap-2.5 text-center">
+        <h4 data-chat-action-title class="font-black text-[#181818] text-base border-b-2 border-[#181818] pb-2">Opsi Pesan</h4>
+        <button onclick="handleActionEdit()" id="btn-action-edit" class="w-full py-2.5 px-4 bg-[#ffe45c] text-[#181818] border-[2px] border-[#181818] rounded-xl text-xs font-black shadow-[3px_3px_0_#181818] hover:-translate-y-0.5 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-pen-to-square"></i> Edit Pesan
+        </button>
+        <button onclick="handleActionDelete()" id="btn-action-delete" class="w-full py-2.5 px-4 bg-[#ff7373] text-[#181818] border-[2px] border-[#181818] rounded-xl text-xs font-black shadow-[3px_3px_0_#181818] hover:-translate-y-0.5 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-trash-can"></i> Hapus Pesan
+        </button>
+        <button onclick="selectedMessageForAction && triggerReply((selectedMessageForAction.sender_name || 'Seseorang').toUpperCase(), selectedMessageForAction.message || '', selectedMessageForAction.sender_id || ''); closeChatActionModal();" class="w-full py-2.5 px-4 bg-[#62bddb] text-[#181818] border-[2px] border-[#181818] rounded-xl text-xs font-black shadow-[3px_3px_0_#181818] hover:-translate-y-0.5 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-reply"></i> Balas Pesan
+        </button>
+        <button onclick="closeChatActionModal()" class="w-full py-2 px-4 bg-[#f0ede5] text-[#181818] border-[2px] border-[#181818] rounded-xl text-xs font-bold shadow-[2px_2px_0_#181818] transition mt-1">
+            Batal
+        </button>
+    </div>
+</div>
+
+
+<!-- MODAL ETALASE MATERI GRATIS -->
+<div id="material-shelf-modal" onclick="if(event.target===this) closeMaterialShelf();" class="fixed inset-0 z-[1100] hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+  <div class="bg-[#fffdf8] w-full max-w-sm rounded-2xl border-[3px] border-[#181818] shadow-[7px_7px_0_#181818] overflow-hidden">
+    <div class="bg-[#ffe45c] px-4 py-3 border-b-[3px] border-[#181818] flex items-center justify-between gap-3">
+      <div class="min-w-0"><div class="text-[9px] font-black uppercase tracking-widest text-slate-600">Etalase Materi Gratis</div><h3 id="material-shelf-title" class="text-lg font-black text-[#181818] mt-0.5">Materi</h3></div>
+      <button onclick="closeMaterialShelf()" class="w-8 h-8 shrink-0 bg-white border-[2px] border-[#181818] rounded-lg font-black shadow-[2px_2px_0_#181818]"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="p-4">
+      <div class="flex items-center gap-3 mb-3"><div id="material-shelf-icon" class="w-11 h-11 shrink-0 rounded-xl bg-[#62bddb] border-[2px] border-[#181818] shadow-[2px_2px_0_#181818] flex items-center justify-center"><i class="fa-solid fa-book-open text-[#181818]"></i></div><div><div id="material-shelf-subtitle" class="text-[10px] font-black uppercase text-slate-500">Materi</div><div class="text-[11px] font-bold text-slate-600">Sumber gratis yang kamu bagikan</div></div></div>
+      <p id="material-shelf-description" class="text-xs leading-relaxed text-slate-700 mb-4">Materi tersedia melalui Google Drive.</p>
+      <a id="material-shelf-open" href="#" target="_blank" rel="noopener noreferrer" class="w-full py-2.5 px-4 bg-[#43c9bd] text-[#181818] border-[2px] border-[#181818] rounded-xl font-black text-xs shadow-[3px_3px_0_#181818] flex items-center justify-center gap-2"><i class="fa-solid fa-arrow-up-right-from-square"></i> Buka Materi</a>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL KUIS HIRAGANA / KATAKANA PEMULA -->
+<div id="kana-quiz-modal" onclick="if(event.target===this) closeKanaQuiz();" class="fixed inset-0 z-[1150] hidden items-center justify-center bg-black/55 backdrop-blur-sm p-3 sm:p-4">
+  <div class="bg-[#fffdf8] w-full max-w-sm rounded-2xl border-[3px] border-[#181818] shadow-[7px_7px_0_#181818] overflow-hidden">
+    <div class="bg-[#ffe45c] px-4 py-3 border-b-[3px] border-[#181818] flex items-center justify-between gap-3">
+      <div class="min-w-0"><div class="text-[9px] font-black uppercase tracking-widest text-slate-600">Latihan Kana Pemula</div><h3 id="kana-quiz-title" class="text-lg font-black text-[#181818] mt-0.5">ひらがな</h3></div>
+      <button onclick="closeKanaQuiz()" class="w-8 h-8 shrink-0 bg-white border-[2px] border-[#181818] rounded-lg font-black shadow-[2px_2px_0_#181818]"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="p-4">
+      <div class="flex items-center justify-between gap-2 mb-3"><span id="kana-quiz-progress" class="text-[10px] font-black text-slate-600">Soal 1 / 10</span><span id="kana-quiz-score" class="text-[10px] font-black bg-white border-[2px] border-[#181818] rounded-lg px-2 py-1">Skor: 0</span></div>
+      <div id="kana-quiz-question" class="min-h-[170px] bg-white border-[3px] border-[#181818] rounded-2xl shadow-[4px_4px_0_#181818] flex flex-col items-center justify-center text-center p-4">
+        <div class="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">Huruf ini dibaca</div>
+        <div id="kana-quiz-character" class="text-7xl sm:text-8xl font-black leading-none japanese-text">あ</div>
+        <div id="kana-quiz-feedback" class="text-xs font-black mt-3 min-h-[18px]"></div>
+      </div>
+      <div id="kana-quiz-options" class="grid grid-cols-2 gap-2.5 mt-3"></div>
+      <div id="kana-quiz-result" class="hidden mt-3 text-center bg-[#f0ede5] border-[2px] border-[#181818] rounded-xl p-4">
+        <div class="text-[9px] font-black uppercase tracking-widest text-slate-500">Hasil latihan</div><div id="kana-quiz-result-score" class="text-3xl font-black text-[#181818] mt-1">0 / 10</div><div id="kana-quiz-result-text" class="text-xs font-bold text-slate-600 mt-1"></div>
+        <div class="flex gap-2 mt-3"><button onclick="restartKanaQuiz()" class="flex-1 py-2 bg-[#ffe45c] text-[#181818] border-[2px] border-[#181818] rounded-xl text-xs font-black shadow-[2px_2px_0_#181818]">Ulangi</button><button onclick="closeKanaQuiz()" class="flex-1 py-2 bg-[#62bddb] text-[#181818] border-[2px] border-[#181818] rounded-xl text-xs font-black shadow-[2px_2px_0_#181818]">Selesai</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- KUSTOM NOTIFIKASI / ALERT CANTIK -->
+<div id="custom-toast-modal" class="fixed inset-0 z-[1200] hidden items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div class="bg-[#fffdf8] w-full max-w-sm rounded-2xl border-[3px] border-[#181818] shadow-[8px_8px_0_#181818] p-6 text-center">
+        <div id="toast-icon" class="w-12 h-12 bg-[#ffe45c] border-[2px] border-[#181818] rounded-xl flex items-center justify-center shadow-[3px_3px_0_#181818] text-xl mx-auto mb-3">
+            <i class="fa-solid fa-circle-exclamation text-[#181818]"></i>
+        </div>
+        <h4 id="toast-title" class="font-black text-[#181818] text-lg mb-1">Informasi</h4>
+        <p id="toast-message" class="text-slate-700 text-xs font-medium mb-5">Pesan notifikasi di sini...</p>
+        <button onclick="closeToast()" class="w-full py-2.5 bg-[#43c9bd] text-[#181818] border-[2px] border-[#181818] rounded-xl font-black text-xs shadow-[3px_3px_0_#181818] hover:-translate-y-0.5 transition">
+            Mengerti
+        </button>
+    </div>
+</div>
+
+
+
+    
+
+    <script src="./data/question-bank.js"></script>
+    <script src="./js/app.js"></script>
+    <script type="module" src="./js/modules/image-question.js"></script>
+    <script type="module" src="./js/modules/deploy-module.js"></script>
+</body>
+</html>
